@@ -85,7 +85,7 @@ resource "aws_security_group_rule" "egress_service" {
 resource "aws_security_group_rule" "ingress_service" {
   security_group_id = aws_security_group.ecs_service.id
   type              = "ingress"
-  protocol          = var.task_container_protocol
+  protocol          = "tcp"
   from_port         = var.task_container_port
   to_port           = var.task_container_port
   cidr_blocks       = ["0.0.0.0/0"]
