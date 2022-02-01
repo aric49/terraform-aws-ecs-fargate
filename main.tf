@@ -98,10 +98,10 @@ resource "aws_security_group_rule" "ingress_service" {
 resource "aws_lb_target_group" "task" {
   name = "${var.name_prefix}-${var.task_container_port}"
 
-  vpc_id      = var.vpc_id
-  protocol    = var.task_container_protocol
-  port        = var.task_container_port
-  target_type = "ip"
+  vpc_id               = var.vpc_id
+  protocol             = var.task_container_protocol
+  port                 = var.task_container_port
+  target_type          = "ip"
   deregistration_delay = 60
   dynamic "health_check" {
     for_each = [var.health_check]
@@ -140,15 +140,27 @@ resource "aws_lb_target_group" "task" {
 locals {
   log_multiline_pattern        = var.log_multiline_pattern != "" ? { "awslogs-multiline-pattern" = var.log_multiline_pattern } : null
   task_container_secrets       = length(var.task_container_secrets) > 0 ? { "secrets" = var.task_container_secrets } : null
+  log_container_seccrets       = length(var.log_container_secrets) > 0 ? { "secrets" = var.log_container_secrets } : null
   repository_credentials       = length(var.repository_credentials) > 0 ? { "repositoryCredentials" = { "credentialsParameter" = var.repository_credentials } } : null
   task_container_port_mappings = concat(var.task_container_port_mappings, [{ containerPort = var.task_container_port, hostPort = var.task_container_port, protocol = "tcp" }])
   task_container_environment   = [for k, v in var.task_container_environment : { name = k, value = v }]
+  log_container_environment    = [for k, v in var.log_container_environment : { name = k, value = v }]
 
   log_configuration_options = merge({
     "awslogs-group"         = aws_cloudwatch_log_group.main.name
     "awslogs-region"        = data.aws_region.current.name
     "awslogs-stream-prefix" = "container"
   }, local.log_multiline_pattern)
+
+  //Define log configuration options for coralogix
+  log_configuration_options_coralogix = merge({
+    "privatekey"    = var.coralogix_private_key
+    "appname"       = var.coralogix_app_name
+    "is_json"       = var.coralogix_is_json
+    "@type"         = "coralogix"
+    "subsystemname" = var.coralogix_subsystem_name
+  }, local.log_multiline_pattern)
+
 
   container_definition = merge({
     "name"         = var.container_name != "" ? var.container_name : var.name_prefix
@@ -159,10 +171,21 @@ locals {
     "command"      = var.task_container_command
     "environment"  = local.task_container_environment
     "logConfiguration" = {
+      "logDriver" = var.container_logging_provider != "cloudfront" ? "awsfirelens" : "awslogs"
+      "options"   = var.container_logging_provider != "cloudfront" ? local.log_configuration_options_coralogix : local.log_configuration_options
+    }
+  }, local.task_container_secrets, local.repository_credentials)
+
+  log_container_side_car = merge({
+    "name"        = "log_router"
+    "image"       = var.log_container_image
+    "essential"   = true
+    "environment" = local.log_container_environment
+    "logConfiguration" = {
       "logDriver" = "awslogs"
       "options"   = local.log_configuration_options
     }
-  }, local.task_container_secrets, local.repository_credentials)
+  }, local.log_container_secrets, local.repository_credentials)
 }
 
 resource "aws_ecs_task_definition" "task" {
@@ -173,7 +196,7 @@ resource "aws_ecs_task_definition" "task" {
   cpu                      = var.task_definition_cpu
   memory                   = var.task_definition_memory
   task_role_arn            = aws_iam_role.task.arn
-  container_definitions    = jsonencode([local.container_definition])
+  container_definitions    = var.task_container_logging_provider != "cloudfront" ? jsonencode([local.container_definition, local.log_container_side_car]) : jsonencode([local.container_definition])
 }
 
 resource "aws_ecs_service" "service" {

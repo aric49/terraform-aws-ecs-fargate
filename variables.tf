@@ -18,6 +18,11 @@ variable "task_container_secrets" {
   default     = []
 }
 
+variable "log_container_secrets" {
+  description = "See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-taskdefinition-secret.html . Beware: Only Secrets Manager secrets supported. The necessary permissions will be added automatically."
+  type        = list(object({ name = string, valueFrom = string }))
+  default     = []
+}
 variable "task_container_secrets_kms_key" {
   type        = string
   description = ""
@@ -107,6 +112,11 @@ variable "task_container_environment" {
   type        = map(string)
 }
 
+variable "log_container_environment" {
+  description = "The environment variables to pass into the log container"
+  default     = {}
+  type        = map(string)
+}
 variable "log_retention_in_days" {
   description = "Number of days the logs will be retained in CloudWatch."
   default     = 30
@@ -206,4 +216,36 @@ variable "deployment_circuit_breaker" {
   description = "Circuit breaking configuration for the ECS service."
   type        = object({ enable = bool, rollback = bool })
   default     = { enable = false, rollback = false }
+}
+
+variable "task_container_logging_provider" {
+  description = "Container logging provider. Default = CloudWatch. Valid values: cloudfront, coralogix"
+  type        = string
+  default     = "cloudwatch"
+}
+
+
+//Coralogix Logging Variables
+variable "coralogix_private_key" {
+  description = "The private key for access to coralogix"
+  type        = string
+  default     = "Undefined"
+}
+
+variable "coralogix_app_name" {
+  description = "The name of the app logging to coralogix"
+  type        = string
+  default     = "Undefined"
+}
+
+variable "coralogix_is_json" {
+  description = "Defines the coralogix 'is_json' parameter"
+  type        = bool
+  default     = true
+}
+
+variable "coralogix_subsystem_name" {
+  description = "The name of the coralogix subsystem"
+  type        = string
+  default     = "undefined"
 }
