@@ -176,8 +176,8 @@ locals {
     "command"      = var.task_container_command
     "environment"  = local.task_container_environment
     "logConfiguration" = {
-      "logDriver" = var.task_container_logging_provider != "cloudfront" ? "awsfirelens" : "awslogs"
-      "options"   = var.task_container_logging_provider != "cloudfront" ? local.log_configuration_options_coralogix : local.log_configuration_options
+      "logDriver" = var.task_container_logging_provider != "cloudwatch" ? "awsfirelens" : "awslogs"
+      "options"   = var.task_container_logging_provider != "cloudwatch" ? local.log_configuration_options_coralogix : local.log_configuration_options
     }
   }, local.task_container_secrets, local.repository_credentials)
 
@@ -191,7 +191,7 @@ locals {
       "options"   = local.log_configuration_options
     }
     "firelensConfiguration" = {
-      "type"    = "fluentd"
+      "type" = "fluentd"
     }
   }, local.log_container_secrets, local.repository_credentials)
 }
@@ -204,7 +204,7 @@ resource "aws_ecs_task_definition" "task" {
   cpu                      = var.task_definition_cpu
   memory                   = var.task_definition_memory
   task_role_arn            = aws_iam_role.task.arn
-  container_definitions    = var.task_container_logging_provider != "cloudfront" ? jsonencode([local.container_definition, local.log_container_side_car]) : jsonencode([local.container_definition])
+  container_definitions    = var.task_container_logging_provider != "cloudwatch" ? jsonencode([local.container_definition, local.log_container_side_car]) : jsonencode([local.container_definition])
 }
 
 resource "aws_ecs_service" "service" {
