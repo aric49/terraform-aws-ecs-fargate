@@ -71,6 +71,10 @@ data "aws_kms_key" "task_container_secrets_key" {
   key_id = var.task_container_secrets_kms_key
 }
 
+data "aws_kms_key" "log_container_secrets_key" {
+  key_id = var.task_container_secrets_kms_key
+}
+
 data "aws_iam_policy_document" "task_container_secrets" {
   statement {
     effect = "Allow"
@@ -86,7 +90,7 @@ data "aws_iam_policy_document" "task_container_secrets" {
   }
 }
 
-data "aws_iam_policy_document" "log_container_secrets_key" {
+data "aws_iam_policy_document" "log_container_secrets" {
   count = var.task_container_logging_provider != "cloudfront" ? 1 : 0
   statement {
     effect = "Allow"
