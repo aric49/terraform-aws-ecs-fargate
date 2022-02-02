@@ -41,7 +41,6 @@ resource "aws_iam_role_policy" "read_task_container_secrets" {
 }
 
 resource "aws_iam_role_policy" "read_log_container_secrets" {
-  count  = var.task_container_logging_provider != "cloudfront" ? 1 : 0
   name   = "${var.name_prefix}-read-log-container-secrets"
   role   = aws_iam_role.execution.id
   policy = data.aws_iam_policy_document.log_container_secrets.json

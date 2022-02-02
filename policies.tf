@@ -91,7 +91,6 @@ data "aws_iam_policy_document" "task_container_secrets" {
 }
 
 data "aws_iam_policy_document" "log_container_secrets" {
-  count = var.task_container_logging_provider != "cloudfront" ? 1 : 0
   statement {
     effect = "Allow"
 
