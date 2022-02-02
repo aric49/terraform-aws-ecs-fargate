@@ -140,7 +140,7 @@ resource "aws_lb_target_group" "task" {
 locals {
   log_multiline_pattern        = var.log_multiline_pattern != "" ? { "awslogs-multiline-pattern" = var.log_multiline_pattern } : null
   task_container_secrets       = length(var.task_container_secrets) > 0 ? { "secrets" = var.task_container_secrets } : null
-  log_container_secrets       = length(var.log_container_secrets) > 0 ? { "secrets" = var.log_container_secrets } : null
+  log_container_secrets        = length(var.log_container_secrets) > 0 ? { "secrets" = var.log_container_secrets } : null
   repository_credentials       = length(var.repository_credentials) > 0 ? { "repositoryCredentials" = { "credentialsParameter" = var.repository_credentials } } : null
   task_container_port_mappings = concat(var.task_container_port_mappings, [{ containerPort = var.task_container_port, hostPort = var.task_container_port, protocol = "tcp" }])
   task_container_environment   = [for k, v in var.task_container_environment : { name = k, value = v }]
