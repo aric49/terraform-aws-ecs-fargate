@@ -190,6 +190,10 @@ locals {
       "logDriver" = "awslogs"
       "options"   = local.log_configuration_options
     }
+    "firelensConfiguration" = {
+      "type"    = "fluentd"
+      "options" = "null"
+    }
   }, local.log_container_secrets, local.repository_credentials)
 }
 
