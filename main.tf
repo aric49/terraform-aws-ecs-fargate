@@ -192,7 +192,6 @@ locals {
     }
     "firelensConfiguration" = {
       "type"    = "fluentd"
-      "options" = "null"
     }
   }, local.log_container_secrets, local.repository_credentials)
 }
