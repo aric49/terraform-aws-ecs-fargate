@@ -86,3 +86,18 @@ data "aws_iam_policy_document" "task_container_secrets" {
   }
 }
 
+data "aws_iam_policy_document" "log_container_secrets_key" {
+  count = var.task_container_logging_provider != "cloudfront" ? 1 : 0
+  statement {
+    effect = "Allow"
+
+    resources = concat(
+      [data.aws_kms_key.log_container_secrets_key.arn],
+      [for i in var.log_container_secrets : i["valueFrom"]]
+    )
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "kms:Decrypt",
+    ]
+  }
+}
