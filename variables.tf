@@ -224,6 +224,12 @@ variable "task_container_logging_provider" {
   default     = "cloudwatch"
 }
 
+variable "log_container_image" {
+  description = "The image name and tag of the container image used by AWS Firelens"
+  type = string
+  default = "docker.io/coralogixrepo/fluentd-coralogix-ecs:latest"
+}
+
 
 //Coralogix Logging Variables
 variable "coralogix_private_key" {
